@@ -85,4 +85,7 @@ export OMPI_MCA_plm=isolated  # Run on a single node and avoid using ssh to laun
 export OMPI_MCA_mtl=^ofi
 export OMPI_MCA_btl_tcp_if_exclude=docker0,127.0.0.0/8
 
+# Avoid Kokkos warnings in notebooks
+export OMP_PROC_BIND=false
+
 exec "$@"
