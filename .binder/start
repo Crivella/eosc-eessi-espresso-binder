@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+export REQUESTED_EESSI_VERSION=${REQUESTED_EESSI_VERSION:-2023.06}
+
+source /cvmfs/software.eessi.io/versions/${REQUESTED_EESSI_VERSION}/init/lmod/bash
+
+# NOTEBOOK_REPO="https://github.com/espressomd/espresso.git"
+# NOTEBOOK_COMMIT="39a185f73bc9d53eb4dd62ba474988047056d671"
+# NOTEBOOK_REPO_DIR="espresso"
+
+# git clone ${NOTEBOOK_REPO} ${NOTEBOOK_REPO_DIR}
+# PREV_DIR=$(pwd)
+# cd ${NOTEBOOK_REPO_DIR}
+# git checkout ${NOTEBOOK_COMMIT}
+# cd ${PREV_DIR}
+NOTEBOOK_REPO_TAR_URL="https://github.com/espressomd/espresso/archive/refs/tags/5.0.1.tar.gz"
+NOTEBOOK_REPO_DIR="espresso"
+mkdir -p ${NOTEBOOK_REPO_DIR}
+wget -O - ${NOTEBOOK_REPO_TAR_URL} | tar -xz --strip-components=1 -C ${NOTEBOOK_REPO_DIR}
+
+KERNEL_DIR="eessi_kernels_ESPRESSO/$EESSI_SOFTWARE_SUBDIR"
+KENREL_NAME="ESPResSo__5.0.1-foss-2025a"
+KERNEL_DISPLAY_NAME="EESSI/2025.06 - ESPResSo (5.0.1)"
+export JUPYTER_PATH="$KERNEL_DIR:$JUPYTER_PATH"
+
+LAUNCHER_FILE="jp_app_launcher.yaml"
+
+ml load jupyter-server
+
+function jupyter_app_launcher_entry() {
+    local notebook_path="$1"
+    notebook_dir="$(dirname "$notebook_path")"
+    notebook_file="$(basename "$notebook_path")"
+    notebook_name="${notebook_file%.*}"
+
+    if grep -q 'import zndraw' "${notebook_path}"; then
+        echo "Skipping notebook: $notebook_file (contains 'import zndraw')"
+        return
+    fi
+    if grep -q 'espressomd.zn' "${notebook_path}"; then
+        echo "Skipping notebook: $notebook_file (contains 'espressomd.zn')"
+        return
+    fi
+
+    echo "Adding entry for notebook: $notebook_file"
+
+    cat <<EOF >> ${LAUNCHER_FILE}
+- title: $notebook_name
+  description: Run the notebook $notebook_name
+  type: notebook
+  source: $notebook_path
+  cwd: $notebook_dir
+  args:
+    widget-type: 'default'
+  catalog: ESPResSo
+
+EOF
+
+    # Use nbformat to change the default kernel name in the notebook metadata to the desired kernel name
+    python3 - <<EOF
+import nbformat
+notebook_path = "${notebook_path}"
+with open(notebook_path, 'r', encoding='utf-8') as f:
+    nb = nbformat.read(f, as_version=4)
+nb['metadata']['kernelspec']['name'] = "${KENREL_NAME}"
+nb['metadata']['kernelspec']['display_name'] = "${KERNEL_DISPLAY_NAME}"
+with open(notebook_path, 'w', encoding='utf-8') as f:
+    nbformat.write(nb, f)
+EOF
+
+}
+
+rm -fr ${LAUNCHER_FILE}
+
+for notebook in $(find ${NOTEBOOK_REPO_DIR} -type f -wholename "*tutorials/**/*.ipynb"); do
+    jupyter_app_launcher_entry "$notebook"
+done
+
+module purge
+
+export OMP_NUM_THREADS=1
+export OMPI_MCA_osc=^ucx
+export OMPI_MCA_btl=^openib,ofi
+export OMPI_MCA_plm=isolated  # Run on a single node and avoid using ssh to launch processes
+export OMPI_MCA_mtl=^ofi
+export OMPI_MCA_btl_tcp_if_exclude=docker0,127.0.0.0/8
+
+exec "$@"
