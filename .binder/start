@@ -4,20 +4,13 @@ export REQUESTED_EESSI_VERSION=${REQUESTED_EESSI_VERSION:-2023.06}
 
 source /cvmfs/software.eessi.io/versions/${REQUESTED_EESSI_VERSION}/init/lmod/bash
 
-# NOTEBOOK_REPO="https://github.com/espressomd/espresso.git"
-# NOTEBOOK_COMMIT="39a185f73bc9d53eb4dd62ba474988047056d671"
-# NOTEBOOK_REPO_DIR="espresso"
-
-# git clone ${NOTEBOOK_REPO} ${NOTEBOOK_REPO_DIR}
-# PREV_DIR=$(pwd)
-# cd ${NOTEBOOK_REPO_DIR}
-# git checkout ${NOTEBOOK_COMMIT}
-# cd ${PREV_DIR}
+# Download the ESPResSo repository for the notebooks
 NOTEBOOK_REPO_TAR_URL="https://github.com/espressomd/espresso/archive/refs/tags/5.0.1.tar.gz"
 NOTEBOOK_REPO_DIR="espresso"
 mkdir -p ${NOTEBOOK_REPO_DIR}
 wget -O - ${NOTEBOOK_REPO_TAR_URL} | tar -xz --strip-components=1 -C ${NOTEBOOK_REPO_DIR}
 
+# Ensure correct kernels for the correct architecture are used
 KERNEL_DIR="eessi_kernels_ESPRESSO/$EESSI_SOFTWARE_SUBDIR"
 KENREL_NAME="ESPResSo__5.0.1-foss-2025a"
 KERNEL_DISPLAY_NAME="EESSI/2025.06 - ESPResSo (5.0.1)"
@@ -70,12 +63,13 @@ EOF
 
 }
 
+# Build the Jupyter app launcher entries for all notebooks in the tutorials directory
 rm -fr ${LAUNCHER_FILE}
-
 for notebook in $(find ${NOTEBOOK_REPO_DIR} -type f -wholename "*tutorials/**/*.ipynb"); do
     jupyter_app_launcher_entry "$notebook"
 done
 
+# Start the Jupyter server without any pre-loaded modules
 module purge
 
 export OMP_NUM_THREADS=1
