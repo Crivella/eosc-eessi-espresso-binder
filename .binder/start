@@ -37,14 +37,27 @@ function jupyter_app_launcher_entry() {
 
     echo "Adding entry for notebook: $notebook_file"
 
+#     cat <<EOF >> ${LAUNCHER_FILE}
+# - title: $notebook_name
+#   description: Run the notebook $notebook_name
+#   type: notebook-grid
+#   source: $notebook_path
+#   cwd: $notebook_dir
+#   args:
+#     widget-type: 'default'
+#   catalog: ESPResSo
+
+# EOF
+
     cat <<EOF >> ${LAUNCHER_FILE}
 - title: $notebook_name
   description: Run the notebook $notebook_name
-  type: notebook
-  source: $notebook_path
-  cwd: $notebook_dir
-  args:
-    widget-type: 'default'
+  type: jupyterlab-commands
+  source:
+    - label: Open notebook
+      id: 'filebrowser:open-path'
+      args:
+        path: $notebook_path
   catalog: ESPResSo
 
 EOF
