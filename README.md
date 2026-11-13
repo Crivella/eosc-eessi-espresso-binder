@@ -24,7 +24,7 @@ Requires EESSI to be available on the system: https://www.eessi.io/docs/getting_
 - Run repo2docker to build the docker image and run it:
 
   ```bash
-  git clone https://github.com/Crivella/eosc-eessi-espresso-binder.git binder-repo
+  git clone https://github.com/multixscale/eosc-eessi-espresso-binder.git binder-repo
   cd binder-repo
   jupyter-repo2docker -v /cvmfs/software.eessi.io/:/cvmfs/software.eessi.io/  .
   ```
