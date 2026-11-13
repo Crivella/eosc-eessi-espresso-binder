@@ -19,6 +19,19 @@ KENREL_NAME="ESPResSo__5.0.1-foss-2025a"
 KERNEL_DISPLAY_NAME="EESSI/2025.06 - ESPResSo (5.0.1)"
 export JUPYTER_PATH="$KERNEL_DIR:$JUPYTER_PATH"
 
+# Fix the ESPResSo SVG logo by adding a viewBox so JupyterLab scales it to fit the launcher card
+RAW_LOGO="${NOTEBOOK_REPO_DIR}/doc/logo/logo-small.svg"
+ICON_PATH="$(pwd)/espresso_logo.svg"
+
+python3 -c "
+with open('${RAW_LOGO}', 'r', encoding='utf-8') as f:
+    svg = f.read()
+svg = svg.replace('width=\"690.94489\"', 'viewBox=\"0 0 690.94489 690.94489\"', 1)
+svg = svg.replace('height=\"690.94489\"', '', 1)
+with open('${ICON_PATH}', 'w', encoding='utf-8') as f:
+    f.write(svg)
+"
+
 LAUNCHER_FILE="jp_app_launcher.yaml"
 
 ml load jupyter-server
