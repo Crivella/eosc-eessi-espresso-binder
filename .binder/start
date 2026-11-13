@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Path to the SVG logo (relative to the Jupyter startup directory or an absolute path)
+ICON_PATH="$(pwd)/images/espresso-logo-small.svg"
+
 export REQUESTED_EESSI_VERSION=${REQUESTED_EESSI_VERSION:-2023.06}
 
 source /cvmfs/software.eessi.io/versions/${REQUESTED_EESSI_VERSION}/init/lmod/bash
@@ -52,6 +55,7 @@ function jupyter_app_launcher_entry() {
     cat <<EOF >> ${LAUNCHER_FILE}
 - title: $notebook_name
   description: Run the notebook $notebook_name
+  icon: $ICON_PATH
   type: jupyterlab-commands
   source:
     - label: Open notebook
