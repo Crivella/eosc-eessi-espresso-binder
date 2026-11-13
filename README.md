@@ -4,7 +4,7 @@
 
 - Ensure you have an account that can login tied to resources: https://open-science-cloud.ec.europa.eu/dashboard
 - Ensure notebooks are enabled in your account: https://open-science-cloud.ec.europa.eu/dashboard/notebooks
-- Start the binder instance: https://binder.eu-2.notebooks.open-science-cloud.ec.europa.eu/v2/gh/Crivella/eosc-eessi-espresso-binder/HEAD
+- Start the binder instance: https://binder.eu-2.notebooks.open-science-cloud.ec.europa.eu/v2/gh/multixscale/eosc-eessi-espresso-binder/HEAD
 
 ## Locally
 
